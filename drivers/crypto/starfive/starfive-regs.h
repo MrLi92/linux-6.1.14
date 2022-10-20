@@ -11,6 +11,7 @@
 
 #define STARFIVE_AES_REGS_OFFSET		0x100
 #define STARFIVE_HASH_REGS_OFFSET		0x300
+#define STARFIVE_PKA_REGS_OFFSET		0x400
 
 union starfive_alg_cr {
 	u32 v;
@@ -23,6 +24,70 @@ union starfive_alg_cr {
 		u32 rsvd_1			:3;
 		u32 clear			:1;
 		u32 rsvd_2			:23;
+	};
+};
+
+#define STARFIVE_PKA_CACR_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x0)
+#define STARFIVE_PKA_CASR_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x4)
+#define STARFIVE_PKA_CAAR_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x8)
+#define STARFIVE_PKA_CAER_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x108)
+#define STARFIVE_PKA_CANR_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x208)
+#define STARFIVE_PKA_CAAFR_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x308)
+#define STARFIVE_PKA_CAEFR_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x30c)
+#define STARFIVE_PKA_CANFR_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x310)
+#define STARFIVE_FIFO_COUNTER_OFFSET		(STARFIVE_PKA_REGS_OFFSET + 0x314)
+
+/* R^2 mod N and N0' */
+#define CRYPTO_CMD_PRE				0x0
+/* (A + A) mod N, ==> A */
+#define CRYPTO_CMD_AAN				0x1
+/* A ^ E mod N   ==> A */
+#define CRYPTO_CMD_AMEN				0x2
+/* A + E mod N   ==> A */
+#define CRYPTO_CMD_AAEN				0x3
+/* A - E mod N   ==> A */
+#define CRYPTO_CMD_ADEN				0x4
+/* A * R mod N   ==> A */
+#define CRYPTO_CMD_ARN				0x5
+/* A * E * R mod N ==> A */
+#define CRYPTO_CMD_AERN				0x6
+/* A * A * R mod N ==> A */
+#define CRYPTO_CMD_AARN				0x7
+/* ECC2P      ==> A */
+#define CRYPTO_CMD_ECC2P			0x8
+/* ECCPQ      ==> A */
+#define CRYPTO_CMD_ECCPQ			0x9
+
+union starfive_pka_cacr {
+	u32 v;
+	struct {
+		u32 start			:1;
+		u32 reset                       :1;
+		u32 ie                          :1;
+		u32 rsvd_0                      :1;
+		u32 fifo_mode                   :1;
+		u32 not_r2                      :1;
+		u32 ecc_sub                     :1;
+		u32 pre_expf                    :1;
+		u32 cmd                         :4;
+		u32 rsvd_1                      :1;
+		u32 ctrl_dummy                  :1;
+		u32 ctrl_false                  :1;
+		u32 cln_done                    :1;
+		u32 opsize                      :6;
+		u32 rsvd_2                      :2;
+		u32 exposize                    :6;
+		u32 rsvd_3                      :1;
+		u32 bigendian                   :1;
+	};
+};
+
+union starfive_pka_casr {
+	u32 v;
+	struct {
+#define STARFIVE_PKA_DONE_FLAGS			BIT(0)
+		u32 done                        :1;
+		u32 rsvd_0                      :31;
 	};
 };
 

@@ -10,6 +10,8 @@
 #include <crypto/engine.h>
 #include <crypto/sha2.h>
 #include <crypto/sm3.h>
+#include <crypto/internal/akcipher.h>
+#include <crypto/internal/rsa.h>
 
 #include "starfive-regs.h"
 
@@ -17,6 +19,31 @@
 #define MAX_KEY_SIZE				SHA512_BLOCK_SIZE
 #define STARFIVE_AES_IV_LEN			AES_BLOCK_SIZE
 #define STARFIVE_AES_CTR_LEN			AES_BLOCK_SIZE
+
+struct starfive_rsa_key {
+	u8					*n;
+	u8					*e;
+	u8					*d;
+	u8					*p;
+	u8					*q;
+	u8					*dp;
+	u8					*dq;
+	u8					*qinv;
+	u8					*rinv;
+	u8					*rinv_p;
+	u8					*rinv_q;
+	u8					*mp;
+	u8					*rsqr;
+	u8					*rsqr_p;
+	u8					*rsqr_q;
+	u8					*pmp;
+	u8					*qmp;
+	int					e_bitlen;
+	int					d_bitlen;
+	int					bitlen;
+	size_t					key_sz;
+	bool					crt_mode;
+};
 
 struct starfive_cryp_ctx {
 	struct crypto_engine_ctx		enginectx;
@@ -28,8 +55,11 @@ struct starfive_cryp_ctx {
 	u8					key[MAX_KEY_SIZE];
 	int					keylen;
 	size_t					hash_len_total;
+	size_t					rsa_key_sz;
+	struct starfive_rsa_key			rsa_key;
 	u8					*buffer;
 	union {
+		struct crypto_akcipher		*akcipher;
 		struct crypto_aead		*aead;
 		struct crypto_shash		*shash;
 	} fallback;
@@ -46,6 +76,7 @@ struct starfive_cryp_dev {
 	phys_addr_t				phys_base;
 	void					*aes_data;
 	void					*hash_data;
+	void					*pka_data;
 	size_t					data_buf_len;
 	int					pages_count;
 	u32					dma_maxburst;
@@ -79,6 +110,7 @@ struct starfive_cryp_request_ctx {
 	union {
 		union starfive_aes_csr		aes;
 		union starfive_hash_csr		hash;
+		union starfive_pka_cacr		pka;
 	} csr;
 	struct scatterlist			*in_sg;
 	struct scatterlist			*out_sg;
@@ -120,5 +152,8 @@ void starfive_hash_unregister_algs(void);
 
 int starfive_aes_register_algs(void);
 void starfive_aes_unregister_algs(void);
+
+int starfive_pka_register_algs(void);
+void starfive_pka_unregister_algs(void);
 
 #endif

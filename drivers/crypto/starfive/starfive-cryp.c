@@ -160,6 +160,13 @@ static int starfive_cryp_probe(struct platform_device *pdev)
 		goto err_aes_data;
 	}
 
+	cryp->pka_data = (void *)__get_free_pages(GFP_KERNEL | GFP_DMA32, pages);
+	if (!cryp->pka_data) {
+		dev_err_probe(&pdev->dev, -ENOMEM,
+			      "Can't allocate pka buffer pages when unaligned\n");
+		goto err_pka_data;
+	}
+
 	cryp->pages_count = pages >> 1;
 	cryp->data_buf_len = STARFIVE_MSG_BUFFER_SIZE >> 1;
 
@@ -182,8 +189,14 @@ static int starfive_cryp_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_algs_aes;
 
+	ret = starfive_pka_register_algs();
+	if (ret)
+		goto err_algs_pka;
+
 	return 0;
 
+err_algs_pka:
+	starfive_aes_unregister_algs();
 err_algs_aes:
 	starfive_hash_unregister_algs();
 err_algs_hash:
@@ -191,6 +204,8 @@ err_algs_hash:
 err_engine_start:
 	crypto_engine_exit(cryp->engine);
 err_engine:
+	free_pages((unsigned long)cryp->pka_data, pages);
+err_pka_data:
 	free_pages((unsigned long)cryp->aes_data, pages);
 err_aes_data:
 	free_pages((unsigned long)cryp->hash_data, pages);
@@ -213,6 +228,7 @@ static int starfive_cryp_remove(struct platform_device *pdev)
 
 	starfive_hash_unregister_algs();
 	starfive_aes_unregister_algs();
+	starfive_pka_unregister_algs();
 
 	crypto_engine_stop(cryp->engine);
 	crypto_engine_exit(cryp->engine);
@@ -221,8 +237,10 @@ static int starfive_cryp_remove(struct platform_device *pdev)
 
 	free_pages((unsigned long)cryp->hash_data, cryp->pages_count);
 	free_pages((unsigned long)cryp->aes_data, cryp->pages_count);
+	free_pages((unsigned long)cryp->pka_data, cryp->pages_count);
 	cryp->hash_data = NULL;
 	cryp->aes_data = NULL;
+	cryp->pka_data = NULL;
 
 	spin_lock(&dev_list.lock);
 	list_del(&cryp->list);
