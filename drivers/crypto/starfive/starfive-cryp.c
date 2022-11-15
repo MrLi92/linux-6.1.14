@@ -96,9 +96,10 @@ static int starfive_cryp_probe(struct platform_device *pdev)
 {
 	struct starfive_cryp_dev *cryp;
 	struct resource *res;
-	int ret;
+	int ret, pages;
 
 	cryp = devm_kzalloc(&pdev->dev, sizeof(*cryp), GFP_KERNEL);
+	mutex_init(&cryp->lock);
 	if (!cryp)
 		return -ENOMEM;
 
@@ -141,6 +142,20 @@ static int starfive_cryp_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_dma_init;
 
+	mutex_init(&cryp->lock);
+	pages = get_order(STARFIVE_MSG_BUFFER_SIZE);
+
+	cryp->hash_data = (void *)__get_free_pages(GFP_KERNEL | GFP_DMA32, pages);
+	if (!cryp->hash_data) {
+		dev_err_probe(&pdev->dev, -ENOMEM,
+			      "Can't allocate hash buffer pages when unaligned\n");
+		ret = -ENOMEM;
+		goto err_hash_data;
+	}
+
+	cryp->pages_count = pages >> 1;
+	cryp->data_buf_len = STARFIVE_MSG_BUFFER_SIZE >> 1;
+
 	/* Initialize crypto engine */
 	cryp->engine = crypto_engine_alloc_init(&pdev->dev, 1);
 	if (!cryp->engine) {
@@ -152,11 +167,19 @@ static int starfive_cryp_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_engine_start;
 
+	ret = starfive_hash_register_algs();
+	if (ret)
+		goto err_algs_hash;
+
 	return 0;
 
+err_algs_hash:
+	crypto_engine_stop(cryp->engine);
 err_engine_start:
 	crypto_engine_exit(cryp->engine);
 err_engine:
+	free_pages((unsigned long)cryp->hash_data, pages);
+err_hash_data:
 	starfive_dma_cleanup(cryp);
 err_dma_init:
 	spin_lock(&dev_list.lock);
@@ -173,10 +196,15 @@ static int starfive_cryp_remove(struct platform_device *pdev)
 	if (!cryp)
 		return -ENODEV;
 
+	starfive_hash_unregister_algs();
+
 	crypto_engine_stop(cryp->engine);
 	crypto_engine_exit(cryp->engine);
 
 	starfive_dma_cleanup(cryp);
+
+	free_pages((unsigned long)cryp->hash_data, cryp->pages_count);
+	cryp->hash_data = NULL;
 
 	spin_lock(&dev_list.lock);
 	list_del(&cryp->list);
