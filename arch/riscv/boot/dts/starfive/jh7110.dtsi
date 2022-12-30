@@ -233,6 +233,16 @@
 		#clock-cells = <0>;
 	};
 
+	dvp_clk: dvp_clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+	};
+
+	hdmitx0_pixelclk: hdmitx0_pixelclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+	};
+
 	soc {
 		compatible = "simple-bus";
 		interrupt-parent = <&plic>;
