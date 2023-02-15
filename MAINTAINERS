@@ -19691,6 +19691,11 @@ F:	Documentation/devicetree/bindings/reset/starfive,jh7100-reset.yaml
 F:	drivers/reset/starfive/reset-starfive-jh71*
 F:	include/dt-bindings/reset/starfive?jh71*.h
 
+STARFIVE JH7110 SYSCON
+M:	William Qiu <william.qiu@starfivetech.com>
+S:	Supported
+F:	Documentation/devicetree/bindings/soc/starfive/jh7110-syscon.yaml
+
 STARFIVE SOC DRIVER
 M:	Conor Dooley <conor@kernel.org>
 S:	Maintained
