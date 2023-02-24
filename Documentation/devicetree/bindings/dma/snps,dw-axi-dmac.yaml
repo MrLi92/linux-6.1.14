@@ -13,14 +13,12 @@ maintainers:
 description:
   Synopsys DesignWare AXI DMA Controller DT Binding
 
-allOf:
-  - $ref: "dma-controller.yaml#"
-
 properties:
   compatible:
     enum:
       - snps,axi-dma-1.01a
       - intel,kmb-axi-dma
+      - starfive,jh7110-axi-dma
 
   reg:
     minItems: 1
@@ -59,7 +57,8 @@ properties:
     maximum: 8
 
   resets:
-    maxItems: 1
+    minItems: 1
+    maxItems: 2
 
   snps,dma-masters:
     description: |
@@ -109,6 +108,24 @@ required:
   - snps,data-width
   - snps,priority
   - snps,block-size
+
+allOf:
+  - $ref: "dma-controller.yaml#"
+  - if:
+      properties:
+        compatible:
+          contains:
+            enum:
+              - starfive,jh7110-axi-dma
+    then:
+      properties:
+        resets:
+          minItems: 1
+          maxItems: 2
+    else:
+      properties:
+        resets:
+          maxItems: 1
 
 additionalProperties: false
 
