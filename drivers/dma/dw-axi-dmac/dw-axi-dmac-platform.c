@@ -21,10 +21,12 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/of.h>
+#include <linux/of_device.h>
 #include <linux/of_dma.h>
 #include <linux/platform_device.h>
 #include <linux/pm_runtime.h>
 #include <linux/property.h>
+#include <linux/reset.h>
 #include <linux/slab.h>
 #include <linux/types.h>
 
@@ -86,7 +88,8 @@ static inline void axi_chan_config_write(struct axi_dma_chan *chan,
 
 	cfg_lo = (config->dst_multblk_type << CH_CFG_L_DST_MULTBLK_TYPE_POS |
 		  config->src_multblk_type << CH_CFG_L_SRC_MULTBLK_TYPE_POS);
-	if (chan->chip->dw->hdata->reg_map_8_channels) {
+	if (chan->chip->dw->hdata->reg_map_8_channels &&
+	    !chan->chip->dw->hdata->use_cfg2) {
 		cfg_hi = config->tt_fc << CH_CFG_H_TT_FC_POS |
 			 config->hs_sel_src << CH_CFG_H_HS_SEL_SRC_POS |
 			 config->hs_sel_dst << CH_CFG_H_HS_SEL_DST_POS |
@@ -1142,7 +1145,7 @@ static int dma_chan_terminate_all(struct dma_chan *dchan)
 	axi_chan_disable(chan);
 
 	ret = readl_poll_timeout_atomic(chan->chip->regs + DMAC_CHEN, val,
-					!(val & chan_active), 1000, 10000);
+					!(val & chan_active), 1000, DMAC_TIMEOUT_US);
 	if (ret == -ETIMEDOUT)
 		dev_warn(dchan2dev(dchan),
 			 "%s failed to stop\n", axi_chan_name(chan));
@@ -1367,6 +1370,17 @@ static int parse_device_properties(struct axi_dma_chip *chip)
 	return 0;
 }
 
+static int jh7110_rst_init(struct platform_device *pdev)
+{
+	struct reset_control *resets;
+
+	resets = devm_reset_control_array_get_exclusive(&pdev->dev);
+	if (IS_ERR(resets))
+		return PTR_ERR(resets);
+
+	return reset_control_deassert(resets);
+}
+
 static int dw_probe(struct platform_device *pdev)
 {
 	struct device_node *node = pdev->dev.of_node;
@@ -1374,6 +1388,7 @@ static int dw_probe(struct platform_device *pdev)
 	struct resource *mem;
 	struct dw_axi_dma *dw;
 	struct dw_axi_dma_hcfg *hdata;
+	const struct axi_dma_chip_config *ccfg;
 	u32 i;
 	int ret;
 
@@ -1415,6 +1430,15 @@ static int dw_probe(struct platform_device *pdev)
 	chip->cfgr_clk = devm_clk_get(chip->dev, "cfgr-clk");
 	if (IS_ERR(chip->cfgr_clk))
 		return PTR_ERR(chip->cfgr_clk);
+
+	ccfg = of_device_get_match_data(&pdev->dev);
+	if (ccfg) {
+		ret = ccfg->rst_init(pdev);
+		if (ret)
+			return ret;
+
+		chip->dw->hdata->use_cfg2 = ccfg->use_cfg2;
+	}
 
 	ret = parse_device_properties(chip);
 	if (ret)
@@ -1557,9 +1581,15 @@ static const struct dev_pm_ops dw_axi_dma_pm_ops = {
 	SET_RUNTIME_PM_OPS(axi_dma_runtime_suspend, axi_dma_runtime_resume, NULL)
 };
 
+static const struct axi_dma_chip_config jh7110_chip_config = {
+	.rst_init = jh7110_rst_init,
+	.use_cfg2 = true,
+};
+
 static const struct of_device_id dw_dma_of_id_table[] = {
 	{ .compatible = "snps,axi-dma-1.01a" },
 	{ .compatible = "intel,kmb-axi-dma" },
+	{ .compatible = "starfive,jh7110-axi-dma", .data = &jh7110_chip_config },
 	{}
 };
 MODULE_DEVICE_TABLE(of, dw_dma_of_id_table);
