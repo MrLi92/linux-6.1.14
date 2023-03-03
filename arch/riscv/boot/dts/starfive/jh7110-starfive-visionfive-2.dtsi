@@ -264,4 +264,105 @@
 			slew-rate = <0>;
 		};
 	};
+
+	mmc0_pins: mmc0-pins {
+		 mmc0-pins-rest {
+			pinmux = <GPIOMUX(62, GPOUT_SYS_SDIO0_RST,
+						GPOEN_ENABLE, GPI_NONE)>;
+			bias-pull-up;
+			drive-strength = <12>;
+			input-disable;
+			input-schmitt-disable;
+			slew-rate = <0>;
+		};
+	};
+
+	sdcard1_pins: sdcard1-pins {
+		sdcard1-pins0 {
+			pinmux = <GPIOMUX(10, GPOUT_SYS_SDIO1_CLK,
+						GPOEN_ENABLE, GPI_NONE)>;
+			bias-pull-up;
+			drive-strength = <12>;
+			input-disable;
+			input-schmitt-disable;
+			slew-rate = <0>;
+		};
+
+		sdcard1-pins1 {
+			pinmux = <GPIOMUX(9, GPOUT_SYS_SDIO1_CMD,
+						GPOEN_SYS_SDIO1_CMD, GPI_SYS_SDIO1_CMD)>;
+			bias-pull-up;
+			drive-strength = <12>;
+			input-enable;
+			input-schmitt-enable;
+			slew-rate = <0>;
+		};
+
+		sdcard1-pins2 {
+			pinmux = <GPIOMUX(11, GPOUT_SYS_SDIO1_DATA0,
+						GPOEN_SYS_SDIO1_DATA0, GPI_SYS_SDIO1_DATA0)>;
+			bias-pull-up;
+			drive-strength = <12>;
+			input-enable;
+			input-schmitt-enable;
+			slew-rate = <0>;
+		};
+
+		sdcard1-pins3 {
+			pinmux = <GPIOMUX(12, GPOUT_SYS_SDIO1_DATA1,
+						GPOEN_SYS_SDIO1_DATA1, GPI_SYS_SDIO1_DATA1)>;
+			bias-pull-up;
+			drive-strength = <12>;
+			input-enable;
+			input-schmitt-enable;
+			slew-rate = <0>;
+		};
+
+		sdcard1-pins4 {
+			pinmux = <GPIOMUX(7, GPOUT_SYS_SDIO1_DATA2,
+						GPOEN_SYS_SDIO1_DATA2, GPI_SYS_SDIO1_DATA2)>;
+			bias-pull-up;
+			drive-strength = <12>;
+			input-enable;
+			input-schmitt-enable;
+			slew-rate = <0>;
+		};
+
+		sdcard1-pins5 {
+			pinmux = <GPIOMUX(8, GPOUT_SYS_SDIO1_DATA3,
+						GPOEN_SYS_SDIO1_DATA3, GPI_SYS_SDIO1_DATA3)>;
+			bias-pull-up;
+			drive-strength = <12>;
+			input-enable;
+			input-schmitt-enable;
+			slew-rate = <0>;
+		};
+	};
+};
+
+&mmc0 {
+	max-frequency = <100000000>;
+	bus-width = <8>;
+	cap-mmc-highspeed;
+	mmc-ddr-1_8v;
+	mmc-hs200-1_8v;
+	non-removable;
+	cap-mmc-hw-reset;
+	post-power-on-delay-ms = <200>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc0_pins>;
+	status = "okay";
+};
+
+&mmc1 {
+	max-frequency = <100000000>;
+	bus-width = <4>;
+	no-sdio;
+	no-mmc;
+	broken-cd;
+	cap-sd-highspeed;
+	post-power-on-delay-ms = <200>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdcard1_pins>;
+	status = "okay";
 };
