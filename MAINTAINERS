@@ -19712,6 +19712,13 @@ M:	William Qiu <william.qiu@starfivetech.com>
 S:	Supported
 F:	Documentation/devicetree/bindings/soc/starfive/jh7110-syscon.yaml
 
+STARFIVE JH71X0 USB PHY DRIVERS
+M:	Emil Renner Berthing <kernel@esmil.dk>
+M:	Minda Chen <minda.chen@starfivetech.com>
+S:	Maintained
+F:	Documentation/devicetree/bindings/phy/starfive,jh7110-usb*.yaml
+F:	drivers/usb/cdns3/cdns3-starfive.c
+
 STARFIVE SOC DRIVER
 M:	Conor Dooley <conor@kernel.org>
 S:	Maintained
