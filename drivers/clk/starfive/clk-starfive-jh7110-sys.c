@@ -360,7 +360,7 @@ static int __init jh7110_syscrg_probe(struct platform_device *pdev)
 
 	/* 24MHz -> 1250.0MHz */
 	priv->pll[0] = devm_clk_hw_register_fixed_factor(priv->dev, "pll0_out",
-							 "osc", 0, 625, 12);
+							 "osc", 0, 125, 3);
 	if (IS_ERR(priv->pll[0]))
 		return PTR_ERR(priv->pll[0]);
 
