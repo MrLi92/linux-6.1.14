@@ -19719,6 +19719,12 @@ S:	Supported
 F:	Documentation/devicetree/bindings/timer/starfive*
 F:	drivers/clocksource/timer-starfive*
 
+STARFIVE TRNG DRIVER
+M:	Jia Jie Ho <jiajie.ho@starfivetech.com>
+S:	Supported
+F:	Documentation/devicetree/bindings/rng/starfive*
+F:	drivers/char/hw_random/starfive-trng.c
+
 STARFIVE JH7110 WATCHDOG DRIVER
 M:	Xingyu Wu <xingyu.wu@starfivetech.com>
 M:	Samin Guo <samin.guo@starfivetech.com>
