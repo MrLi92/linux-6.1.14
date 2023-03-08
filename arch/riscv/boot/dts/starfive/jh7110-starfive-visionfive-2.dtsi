@@ -165,6 +165,12 @@
 	};
 };
 
+&usb0 {
+	starfive,usb2-only;
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
 &i2c5 {
 	clock-frequency = <100000>;
 	i2c-sda-hold-time-ns = <300>;
