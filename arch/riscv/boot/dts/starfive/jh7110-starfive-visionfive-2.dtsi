@@ -19,6 +19,8 @@
 		spi0 = &qspi;
 		i2c5 = &i2c5;
 		i2c6 = &i2c6;
+		mmc0 = &mmc0;
+		mmc1 = &mmc1;
 	};
 
 	chosen {
@@ -330,8 +332,8 @@
 		};
 	};
 
-	sdcard1_pins: sdcard1-pins {
-		sdcard1-pins0 {
+	mmc1_pins: mmc1-pins {
+		mmc1-pins0 {
 			pinmux = <GPIOMUX(10, GPOUT_SYS_SDIO1_CLK,
 						GPOEN_ENABLE, GPI_NONE)>;
 			bias-pull-up;
@@ -341,48 +343,16 @@
 			slew-rate = <0>;
 		};
 
-		sdcard1-pins1 {
+		mmc1-pins1 {
 			pinmux = <GPIOMUX(9, GPOUT_SYS_SDIO1_CMD,
-						GPOEN_SYS_SDIO1_CMD, GPI_SYS_SDIO1_CMD)>;
-			bias-pull-up;
-			drive-strength = <12>;
-			input-enable;
-			input-schmitt-enable;
-			slew-rate = <0>;
-		};
-
-		sdcard1-pins2 {
-			pinmux = <GPIOMUX(11, GPOUT_SYS_SDIO1_DATA0,
-						GPOEN_SYS_SDIO1_DATA0, GPI_SYS_SDIO1_DATA0)>;
-			bias-pull-up;
-			drive-strength = <12>;
-			input-enable;
-			input-schmitt-enable;
-			slew-rate = <0>;
-		};
-
-		sdcard1-pins3 {
-			pinmux = <GPIOMUX(12, GPOUT_SYS_SDIO1_DATA1,
-						GPOEN_SYS_SDIO1_DATA1, GPI_SYS_SDIO1_DATA1)>;
-			bias-pull-up;
-			drive-strength = <12>;
-			input-enable;
-			input-schmitt-enable;
-			slew-rate = <0>;
-		};
-
-		sdcard1-pins4 {
-			pinmux = <GPIOMUX(7, GPOUT_SYS_SDIO1_DATA2,
-						GPOEN_SYS_SDIO1_DATA2, GPI_SYS_SDIO1_DATA2)>;
-			bias-pull-up;
-			drive-strength = <12>;
-			input-enable;
-			input-schmitt-enable;
-			slew-rate = <0>;
-		};
-
-		sdcard1-pins5 {
-			pinmux = <GPIOMUX(8, GPOUT_SYS_SDIO1_DATA3,
+						GPOEN_SYS_SDIO1_CMD, GPI_SYS_SDIO1_CMD)>,
+					<GPIOMUX(11, GPOUT_SYS_SDIO1_DATA0,
+						GPOEN_SYS_SDIO1_DATA0, GPI_SYS_SDIO1_DATA0)>,
+					<GPIOMUX(12, GPOUT_SYS_SDIO1_DATA1,
+						GPOEN_SYS_SDIO1_DATA1, GPI_SYS_SDIO1_DATA1)>,
+					<GPIOMUX(7, GPOUT_SYS_SDIO1_DATA2,
+						GPOEN_SYS_SDIO1_DATA2, GPI_SYS_SDIO1_DATA2)>,
+					<GPIOMUX(8, GPOUT_SYS_SDIO1_DATA3,
 						GPOEN_SYS_SDIO1_DATA3, GPI_SYS_SDIO1_DATA3)>;
 			bias-pull-up;
 			drive-strength = <12>;
@@ -416,7 +386,7 @@
 	cap-sd-highspeed;
 	post-power-on-delay-ms = <200>;
 	pinctrl-names = "default";
-	pinctrl-0 = <&sdcard1_pins>;
+	pinctrl-0 = <&mmc1_pins>;
 	status = "okay";
 };
 
